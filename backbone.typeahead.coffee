@@ -9,8 +9,13 @@ class Backbone.TypeaheadCollection extends Backbone.Collection
 
     s.toLowerCase().split(/[\s\-_]+/)
 
-  _tokenizeModel: (model) ->
-    attributeValues = if @typeaheadAttributes? then _.map(@typeaheadAttributes, (att) -> model.get(att)) else _.values(model.attributes)
+  _deepObjectMap: (obj, attrs) ->
+    return obj unless attrs.length > 0 and _.isObject(obj)
+    return obj[attrs[0]] if attrs.length is 1
+    @_deepObjectMap(obj[attrs[0]], attrs.slice(1, attrs.length))
+
+  _tokenizeModel: (model) -> # 'val.state'
+    attributeValues = if @typeaheadAttributes? then _.map(@typeaheadAttributes, (att) => @_deepObjectMap(model.get(att.split('.')[0]), att.split(".")[1..-1])) else _.values(model.attributes)
     _.uniq(@_tokenize(_.flatten(attributeValues).join(' ')))
 
   _addToIndex: (models) ->

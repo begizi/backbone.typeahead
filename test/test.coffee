@@ -214,3 +214,27 @@ describe 'Backbone Typeahead', ->
 
       actual.should.eql expected
       @albums._adjacency['m'].length.should.eql 2
+
+  describe 'Nested Attributes', ->
+    class Albums extends Backbone.TypeaheadCollection
+        typeaheadAttributes: ['band', 'meta.name', 'meta.members']
+
+    beforeEach ->
+      @albums = new Albums([
+        { band: 'A Flock of Seagulls', meta: { name: 'A Flock of Seagulls', members: ['Mike Score'] }}
+        { band: 'Rick Astley', meta: { name: 'Whenever You Need Somebody', members: ['Rick Astley'] }}
+        { band: 'Queen', meta: { name: 'A Day at the Races', members: ['Brian May'] }}
+        { band: 'Queen', meta: { name: 'Tie Your Mother Down', members: ['Brian May'] }}
+      ])
+
+    it 'should handle string nested attributes', ->
+      expected = ['A Day at the Races']
+      actual = _.map @albums.typeahead('day'), (a) -> a.get('meta').name
+
+      actual.should.eql expected
+
+    it 'should handle array nested attributes', ->
+      expected = ['A Day at the Races', 'Tie Your Mother Down']
+      actual = _.map @albums.typeahead('Brian'), (a) -> a.get('meta').name
+
+      actual.should.eql expected
